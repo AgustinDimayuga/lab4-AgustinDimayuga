@@ -1,3 +1,6 @@
+import matplotlib.pyplot as plt
+import networkx as nx
+
 from queue_array import QueueArray
 
 
@@ -116,3 +119,70 @@ class BinarySearchTree:
                 queue.enqueue(node.left)
             if node.right:
                 queue.enqueue(node.right)
+
+    def _build_graph(self, node, graph, pos, x=0, y=0, layer=1):
+        """Build a NetworkX graph representation of the tree"""
+        if node is not None:
+            # Add the current node to the graph
+            graph.add_node(node.key)
+
+            # Position the node
+            pos[node.key] = (x, y)
+
+            # Calculate horizontal spacing
+            spacing = 1.0 / (2**layer)
+
+            # Process left child
+            if node.left:
+                graph.add_edge(node.key, node.left.key)
+                self._build_graph(node.left, graph, pos, x - spacing, y - 1, layer + 1)
+
+            # Process right child
+            if node.right:
+                graph.add_edge(node.key, node.right.key)
+                self._build_graph(node.right, graph, pos, x + spacing, y - 1, layer + 1)
+
+        return graph, pos
+
+    def visualize(self, title="Binary Search Tree"):
+        """Visualize the binary search tree using NetworkX and Matplotlib"""
+        if self.root is None:
+            print("Tree is empty")
+            return
+
+        # Create a directed graph
+        G = nx.DiGraph()
+        pos = {}
+
+        # Build the graph
+        G, pos = self._build_graph(self.root, G, pos)
+
+        plt.figure(figsize=(10, 8))
+        plt.title(title)
+
+        # Draw the graph
+        nx.draw(
+            G,
+            pos,
+            with_labels=True,
+            arrows=False,
+            node_size=2000,
+            node_color="skyblue",
+            font_size=15,
+            font_weight="bold",
+        )
+
+        plt.tight_layout()
+        plt.show()
+
+
+tree = BinarySearchTree()
+tree.insert(50)
+tree.insert(30)
+tree.insert(70)
+tree.insert(20)
+tree.insert(40)
+tree.insert(60)
+tree.insert(80)
+
+tree.visualize("My BST Visualization")
