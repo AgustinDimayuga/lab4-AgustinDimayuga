@@ -11,6 +11,12 @@ class TreeNode:
         self.key = key
         self.data = None
 
+    def find_max_node(self, root):  # returns min value in the tree
+        curr = root
+        while curr and curr.right:
+            curr = curr.right
+        return curr
+
 
 class BinarySearchTree:
     # write the __init__() method here. The tree has at least a ‘root’ node.
@@ -82,14 +88,26 @@ class BinarySearchTree:
     def delete(
         self, key
     ):  # deletes the node containing key, assumes such a node exists
-        if self.root.key == key:
-            self.root.key = None
-        else:
-            self._delete(key, self.root)
-        print("done")
+        if self.root == None:
+            raise IndexError("BST is empty")
+        self._delete(key, self.root)
 
     def _delete(self, key, node):
-        pass
+        if key < node.key:
+            node.left = self._delete(key, node.left)
+        elif key > node.key:
+            node.right = self._delete(key, node.right)
+        else:
+            if node.left == None:
+                return node.right
+            elif node.right == None:
+                return node.left
+            else:
+                max = node.find_max_node(node.left)
+                node.key = max.key
+                node.left = self._delete(max.key, node.left)
+
+        return node
 
     def print_tree(self):  # print inorder the entire tree
         self._print_tree(self.root)
@@ -111,14 +129,14 @@ class BinarySearchTree:
         self,
     ):  # inorder traversal prints lists of pairs, [key, level of the node] where root is level ()
         queue = QueueArray(100)
-        queue.enqueue(self.root)
+        queue.enqueue((self.root, 0))
         while queue.is_empty() is not True:
-            node = queue.dequeue()
-            print(node.key)
+            node, level = queue.dequeue()
+            print(node.key, level)
             if node.left:
-                queue.enqueue(node.left)
+                queue.enqueue((node.left, level + 1))
             if node.right:
-                queue.enqueue(node.right)
+                queue.enqueue((node.right, level + 1))
 
     def _build_graph(self, node, graph, pos, x=0, y=0, layer=1):
         """Build a NetworkX graph representation of the tree"""
@@ -184,5 +202,11 @@ tree.insert(20)
 tree.insert(40)
 tree.insert(60)
 tree.insert(80)
-
-tree.visualize("My BST Visualization")
+tree.delete(70)
+tree.insert(15)
+tree.insert(20)
+tree.insert(25)
+tree.insert(39)
+tree.insert(41)
+tree.delete(30)
+tree.print_levels()
